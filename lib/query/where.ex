@@ -60,6 +60,16 @@ defmodule QueryBuilder.Query.Where do
     Ecto.Query.where(query, [{^binding, x}], field(x, ^field) <= ^value)
   end
 
+  defp do_where(query, binding, {field, :like, value}) do
+    value = "%#{value}%"
+    Ecto.Query.where(query, [{^binding, x}], like(field(x, ^field), ^value))
+  end
+
+  defp do_where(query, binding, {field, :ilike, value}) do
+    value = "%#{value}%"
+    Ecto.Query.where(query, [{^binding, x}], ilike(field(x, ^field), ^value))
+  end
+
   defp do_where(query, binding1, binding2, {field1, :eq, field2}) do
     Ecto.Query.where(
       query,
@@ -107,4 +117,25 @@ defmodule QueryBuilder.Query.Where do
       field(x, ^field1) <= field(y, ^field2)
     )
   end
+
+  defp do_where(query, binding1, binding2, {field1, :like, field2}) do
+    Ecto.Query.where(
+      query,
+      [{^binding1, x}, {^binding2, y}],
+      fragment("? LIKE '%?%'",
+        field(x, ^field1) |> type(:string),
+        field(y, ^field2) |> type(:string))
+    )
+  end
+
+  defp do_where(query, binding1, binding2, {field1, :ilike, field2}) do
+    Ecto.Query.where(
+      query,
+      [{^binding1, x}, {^binding2, y}],
+      fragment("? ILIKE '%?%'",
+        field(x, ^field1) |> type(:string),
+        field(y, ^field2) |> type(:string))
+    )
+  end
+
 end
