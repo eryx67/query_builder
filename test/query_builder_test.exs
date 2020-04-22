@@ -82,6 +82,14 @@ defmodule QueryBuilderTest do
            |> QueryBuilder.where(email: "alice@example.com")
            |> Repo.one()
 
+    assert User
+           |> QueryBuilder.where({:name, :like, "Bo"})
+           |> Repo.one()
+
+    assert User
+           |> QueryBuilder.where({:name, :ilike, "bo"})
+           |> Repo.one()
+
     all_users_but_bob =
       User
       |> QueryBuilder.where({:name, :ne, "Bob"})
@@ -104,6 +112,20 @@ defmodule QueryBuilderTest do
       |> Repo.all()
 
     assert 2 == length(all_users_with_write_role)
+
+    all_users_with_like_write_role =
+      User
+      |> QueryBuilder.where([role: :permissions], {:name@permissions, :like, "writ"})
+      |> Repo.all()
+
+    assert 2 == length(all_users_with_like_write_role)
+
+    all_users_with_ilike_write_role =
+      User
+      |> QueryBuilder.where([role: :permissions], {:name@permissions, :ilike, "WRIT"})
+      |> Repo.all()
+
+    assert 2 == length(all_users_with_ilike_write_role)
   end
 
   test "order_by" do
