@@ -61,12 +61,12 @@ defmodule QueryBuilder.Query.Where do
   end
 
   defp do_where(query, binding, {field, :like, value}) do
-    value = "%#{value}%"
+    value = like_value(value)
     Ecto.Query.where(query, [{^binding, x}], like(field(x, ^field), ^value))
   end
 
   defp do_where(query, binding, {field, :ilike, value}) do
-    value = "%#{value}%"
+    value = like_value(value)
     Ecto.Query.where(query, [{^binding, x}], ilike(field(x, ^field), ^value))
   end
 
@@ -137,5 +137,15 @@ defmodule QueryBuilder.Query.Where do
         field(y, ^field2) |> type(:string))
     )
   end
+
+  defp like_value(value) when is_binary(value) do
+    case :binary.match(value, "%") do
+      :nomatch ->
+        "%#{value}%"
+      _ ->
+        value
+    end
+  end
+  defp like_value(value), do:  "%#{value}%"
 
 end
